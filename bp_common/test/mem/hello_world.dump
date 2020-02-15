@@ -451,6 +451,7 @@ Disassembly of section .text:
     80000694:	00028513          	mv	a0,t0
     80000698:	00008067          	ret
 
+<<<<<<< HEAD
 000000008000069c <amo_swapd>:
     8000069c:	100532af          	lr.d	t0,(a0)
     800006a0:	18b5332f          	sc.d	t1,a1,(a0)
@@ -617,3 +618,64 @@ Disassembly of section .text:
     800008a4:	fe0312e3          	bnez	t1,80000888 <amo_minuw>
     800008a8:	00028513          	mv	a0,t0
     800008ac:	00008067          	ret
+=======
+000000008000069c <amo_maxuw>:
+    8000069c:	100522af          	lr.w	t0,(a0)
+    800006a0:	00b2b333          	sltu	t1,t0,a1
+    800006a4:	4060033b          	negw	t1,t1
+    800006a8:	00b2c3b3          	xor	t2,t0,a1
+    800006ac:	00737e33          	and	t3,t1,t2
+    800006b0:	01c2ce33          	xor	t3,t0,t3
+    800006b4:	19c5232f          	sc.w	t1,t3,(a0)
+    800006b8:	fe0312e3          	bnez	t1,8000069c <amo_maxuw>
+    800006bc:	00028513          	mv	a0,t0
+    800006c0:	00008067          	ret
+
+00000000800006c4 <amo_mind>:
+    800006c4:	100532af          	lr.d	t0,(a0)
+    800006c8:	00b2a333          	slt	t1,t0,a1
+    800006cc:	40600333          	neg	t1,t1
+    800006d0:	00b2c3b3          	xor	t2,t0,a1
+    800006d4:	00737e33          	and	t3,t1,t2
+    800006d8:	01c5ce33          	xor	t3,a1,t3
+    800006dc:	19c5332f          	sc.d	t1,t3,(a0)
+    800006e0:	fe0312e3          	bnez	t1,800006c4 <amo_mind>
+    800006e4:	00028513          	mv	a0,t0
+    800006e8:	00008067          	ret
+
+00000000800006ec <amo_minw>:
+    800006ec:	100522af          	lr.w	t0,(a0)
+    800006f0:	00b2a333          	slt	t1,t0,a1
+    800006f4:	4060033b          	negw	t1,t1
+    800006f8:	00b2c3b3          	xor	t2,t0,a1
+    800006fc:	00737e33          	and	t3,t1,t2
+    80000700:	01c5ce33          	xor	t3,a1,t3
+    80000704:	19c5232f          	sc.w	t1,t3,(a0)
+    80000708:	fe0312e3          	bnez	t1,800006ec <amo_minw>
+    8000070c:	00028513          	mv	a0,t0
+    80000710:	00008067          	ret
+
+0000000080000714 <amo_minud>:
+    80000714:	100532af          	lr.d	t0,(a0)
+    80000718:	00b2b333          	sltu	t1,t0,a1
+    8000071c:	40600333          	neg	t1,t1
+    80000720:	00b2c3b3          	xor	t2,t0,a1
+    80000724:	00737e33          	and	t3,t1,t2
+    80000728:	01c5ce33          	xor	t3,a1,t3
+    8000072c:	19c5332f          	sc.d	t1,t3,(a0)
+    80000730:	fe0312e3          	bnez	t1,80000714 <amo_minud>
+    80000734:	00028513          	mv	a0,t0
+    80000738:	00008067          	ret
+
+000000008000073c <amo_minuw>:
+    8000073c:	100522af          	lr.w	t0,(a0)
+    80000740:	00b2b333          	sltu	t1,t0,a1
+    80000744:	4060033b          	negw	t1,t1
+    80000748:	00b2c3b3          	xor	t2,t0,a1
+    8000074c:	00737e33          	and	t3,t1,t2
+    80000750:	01c5ce33          	xor	t3,a1,t3
+    80000754:	19c5232f          	sc.w	t1,t3,(a0)
+    80000758:	fe0312e3          	bnez	t1,8000073c <amo_minuw>
+    8000075c:	00028513          	mv	a0,t0
+    80000760:	00008067          	ret
+>>>>>>> Adding profilers for core and pc
