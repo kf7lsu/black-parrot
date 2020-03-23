@@ -161,7 +161,7 @@ logic                     ptw_page_fault_v, ptw_instr_page_fault_v, ptw_load_pag
 bp_be_dcache_pkt_s        dcache_pkt;
 logic [dword_width_p-1:0] dcache_data;
 logic [ptag_width_p-1:0]  dcache_ptag;
-logic                     dcache_v, dcache_pkt_v;
+logic                     dcache_v, dcache_fencei_v, dcache_pkt_v;
 logic                     dcache_tlb_miss, dcache_poison;
 logic                     dcache_uncached;
 logic                     dcache_ready_lo;
@@ -267,7 +267,7 @@ bp_be_csr
    ,.instret_i(commit_pkt.instret)
 
    ,.exception_v_i(exception_v_li)
-   ,.fencei_v_i(fencei_v_rr & cache_req_ready_i)
+   ,.fencei_v_i(dcache_fencei_v)
    ,.exception_pc_i(exception_pc_li)
    ,.exception_npc_i(exception_npc_li)
    ,.exception_vaddr_i(exception_vaddr_li)
@@ -380,6 +380,7 @@ bp_be_dcache
     ,.v_i(dcache_pkt_v)
     ,.ready_o(dcache_ready_lo)
 
+    ,.fencei_v_o(dcache_fencei_v)
     ,.v_o(dcache_v)
     ,.data_o(dcache_data)
 
@@ -390,6 +391,7 @@ bp_be_dcache
     ,.load_op_tl_o(load_op_tl_lo)
     ,.store_op_tl_o(store_op_tl_lo)
     ,.poison_i(dcache_poison)
+
 
     // D$-LCE Interface
     ,.dcache_miss_o(dcache_miss_lo)
@@ -487,7 +489,7 @@ assign load_access_fault_v  = load_op_tl_lo & (mode_fault_v | did_fault_v);
 assign store_access_fault_v = store_op_tl_lo & (mode_fault_v | did_fault_v);
 
 // D-TLB connections
-assign dtlb_r_v     = dcache_cmd_v;
+assign dtlb_r_v     = dcache_cmd_v & ~fencei_cmd_v;
 assign dtlb_r_vtag  = mmu_cmd.vaddr.tag;
 assign dtlb_w_v     = ptw_tlb_w_v & ~itlb_not_dtlb_resp;
 assign dtlb_w_vtag  = ptw_tlb_w_vtag;
@@ -501,7 +503,7 @@ assign ptw_store_not_load = dtlb_fill_cmd_v & is_store_rr;
 
 // MMU response connections
 assign mem_resp.exc_v  = |exception_ecode_dec_li;
-assign mem_resp.miss_v = mmu_cmd_v_rr & ~dcache_v & ~|exception_ecode_dec_li;
+assign mem_resp.miss_v = mmu_cmd_v_rr & ~dcache_v & ~dcache_fencei_v & ~|exception_ecode_dec_li;
 assign mem_resp.data   = dcache_v ? dcache_data : csr_data_lo;
 
 assign mem_resp_v_o    = ptw_busy ? 1'b0 : mmu_cmd_v_rr | csr_v_lo;
@@ -518,7 +520,7 @@ always_ff @(posedge clk_i)
 
 always_ff @(negedge clk_i)
   begin
-    assert (~(mmu_cmd_v_r & dtlb_r_v_lo & dcache_uncached & (mmu_cmd_r.mem_op inside {e_lrw, e_lrd, e_scw, e_scd})))
+    assert ((reset_i !== 1'b0) || ~(mmu_cmd_v_r & dtlb_r_v_lo & dcache_uncached & (mmu_cmd_r.mem_op inside {e_lrw, e_lrd, e_scw, e_scd})))
       else $warning("LR/SC to uncached memory not supported");
   end
 

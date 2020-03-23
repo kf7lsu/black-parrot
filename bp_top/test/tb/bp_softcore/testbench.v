@@ -31,7 +31,7 @@ module testbench
    , parameter load_nbf_p                  = 0
    , parameter skip_init_p                 = 0
    , parameter cosim_p                     = 0
-   , parameter cosim_cfg_file_p            = load_nbf_p ? "prog.cfg" : "prog.elf"
+   , parameter cosim_cfg_file_p            = "prog.cfg"
 
    , parameter mem_zero_p         = 1
    , parameter mem_file_p         = "prog.mem"
@@ -314,7 +314,7 @@ bind bp_be_top
      ,.reset_i(reset_i)
 
      ,.mem_cmd_i(proc_mem_cmd_lo)
-     ,.mem_cmd_v_i(proc_mem_cmd_v_lo)
+     ,.mem_cmd_v_i(proc_mem_cmd_v_lo & proc_mem_cmd_ready_li)
      ,.mem_cmd_ready_i(proc_mem_cmd_ready_li)
 
      ,.mem_resp_i(proc_mem_resp_li)
