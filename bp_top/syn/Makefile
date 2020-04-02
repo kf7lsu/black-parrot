@@ -18,8 +18,8 @@ START_PC    ?= 0x80000000
 TOLERANCE   ?= 2
 
 COH_PROTO   ?= mesi
-CCE_MEM_PATH = $(BP_ME_DIR)/src/asm/roms/$(COH_PROTO)
-CCE_MEM      = bp_cce_inst_rom_$(COH_PROTO).mem
+CCE_MEM_PATH = $(BP_ME_DIR)/src/asm/roms
+CCE_MEM      = $(COH_PROTO).mem
 
 DRAMSIM_CH_CFG  ?= DDR2_micron_16M_8b_x8_sg3E.ini
 DRAMSIM_SYS_CFG ?= system.ini
