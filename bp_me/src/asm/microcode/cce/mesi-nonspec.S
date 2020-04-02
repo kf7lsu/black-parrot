@@ -1,4 +1,4 @@
-# This microcode uses MESI protocol with LCE transfers enabled
+# This microcode uses MESI protocol
 
 #include "microcode.h"
 
@@ -31,6 +31,18 @@ rdw addr=req lce=req lru_way=lru
 gad
 # fall through
 
+# Replacement Check Routine
+replace_check: bfz next_coh_state rf
+
+# Replacement Routine
+replace: pushq lceCmd WB addr=lru lce=req way=lru
+# wait for writeback response
+replacement_poph: poph lceResp r0
+beqi r0 COH_ACK replacement_poph
+bf complete_replacement nwbf
+pushq memCmd MEM_CMD_WB addr=lru lce=req way=lru wp=1
+complete_replacement: popq lceResp
+
 # Next Coherence State Routine
 # write request means set to M, else read means set to E or S
 next_coh_state: bf next_coh_set_m rqf
@@ -58,20 +70,6 @@ pushq lceCmd STW addr=req lce=req way=req
 bi ready
 
 set_entry: wde addr=req lce=req way=lru state=nextCohSt
-
-# Replacement Check Routine
-replace_check: bfz transfer_check rf
-
-# Replacement Routine
-replace: pushq lceCmd WB addr=lru lce=req way=lru
-# wait for writeback response
-replacement_poph: poph lceResp r0
-beqi r0 COH_ACK replacement_poph
-bf complete_replacement nwbf
-pushq memCmd MEM_CMD_WB addr=lru lce=req way=lru wp=1
-complete_replacement: popq lceResp
-# replacement done, explicitly set replacement flag to 0
-sfz rf
 
 # Transfer Check
 transfer_check: bfz read_l2 cof pt

@@ -1,4 +1,4 @@
-# This microcode uses EI protocol
+# This microcode uses MSI protocol
 
 #include "microcode.h"
 
@@ -31,10 +31,8 @@ rdw addr=req lce=req lru_way=lru
 gad
 # fall through
 
-set_entry: wde addr=req lce=req way=lru state=nextCohSt
-
 # Replacement Check Routine
-replace_check: bfz transfer_check rf
+replace_check: bfz next_coh_state rf
 
 # Replacement Routine
 replace: pushq lceCmd WB addr=lru lce=req way=lru
@@ -45,16 +43,46 @@ bf complete_replacement nwbf
 pushq memCmd MEM_CMD_WB addr=lru lce=req way=lru wp=1
 complete_replacement: popq lceResp
 
+# Next Coherence State Routine
+# write request means set to M, else read means set to S
+next_coh_state: bf next_coh_set_m rqf
+next_coh_set_s: movis COH_S nextCohSt
+bi inv_check
+next_coh_set_m: movis COH_M nextCohSt
+# fall through to inv_check
+
+# Invalidation Check
+inv_check: bfz upgrade_check if pt
+
+# Invalidation Routine
+invalidate: inv
+
+# Upgrade Check Routine
+upgrade_check: bfz set_entry uf pt
+
+# Upgrade Routine
+upgrade: wds addr=req lce=req way=req state=nextCohSt
+pushq lceCmd STW addr=req lce=req way=req
+bi ready
+
+set_entry: wde addr=req lce=req way=lru state=nextCohSt
+
 # Transfer Check
 transfer_check: bfz read_l2 cof pt
 
 # Transfer routine - other cache has block in E/M
-# state for lceCmd will always come from nextCohSt
-transfer: movis COH_I nextCohSt
+# write requests invalidate owner, read requests downgrade owner to S
+transfer: bf transfer_write rqf
+movis COH_S nextCohSt
 pushq lceCmd ST addr=req lce=owner way=owner
 wds addr=req lce=owner way=owner state=nextCohSt
-movis COH_E nextCohSt
-pushq lceCmd TR addr=req lce=owner way=owner
+bi transfer_tr
+transfer_write: movsg nextCohSt r7
+movis COH_I nextCohSt
+pushq lceCmd ST addr=req lce=owner way=owner
+wds addr=req lce=owner way=owner state=nextCohSt
+movgs r7 nextCohSt
+transfer_tr: pushq lceCmd TR addr=req lce=owner way=owner
 pushq lceCmd WB addr=req lce=owner way=owner
 # wait for transfer WB response
 transfer_poph: poph lceResp r0

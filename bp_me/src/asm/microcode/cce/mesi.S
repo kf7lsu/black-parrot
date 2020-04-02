@@ -1,4 +1,4 @@
-# This microcode uses MESI protocol with LCE transfers enabled
+# This microcode uses MESI protocol with speculative memory access
 
 #include "microcode.h"
 
@@ -72,9 +72,21 @@ bi ready
 
 # Handle request that wasn't easily fast-pathed (if, rf, cof, uf)
 
+# Replacement Check Routine
+handle_req: bfz next_coh_state rf
+
+# Replacement Routine
+replace: pushq lceCmd WB addr=lru lce=req way=lru
+# wait for writeback response
+replacement_poph: poph lceResp r0
+beqi r0 COH_ACK replacement_poph
+bf complete_replacement nwbf
+pushq memCmd MEM_CMD_WB addr=lru lce=req way=lru wp=1
+complete_replacement: popq lceResp
+
 # Next Coherence State Routine
 # write request means set to M, else check non-exclusive request
-handle_req: bf next_coh_set_m rqf
+next_coh_state: bf next_coh_set_m rqf
 # non-exclusive request (read-only) or blocked cached somewhere, set to S
 bfnz next_coh_set_s cf nerf
 # invalidations not required, thus block not cache, set to E
@@ -101,20 +113,6 @@ specq squash req
 bi ready
 
 set_entry: wde addr=req lce=req way=lru state=nextCohSt
-
-# Replacement Check Routine
-replace_check: bfz transfer_check rf
-
-# Replacement Routine
-replace: pushq lceCmd WB addr=lru lce=req way=lru
-# wait for writeback response
-replacement_poph: poph lceResp r0
-beqi r0 COH_ACK replacement_poph
-bf complete_replacement nwbf
-pushq memCmd MEM_CMD_WB addr=lru lce=req way=lru wp=1
-complete_replacement: popq lceResp
-# replacement done, explicitly set replacement flag to 0
-sfz rf
 
 # Transfer Check
 transfer_check: bfz read_l2 cof pt
