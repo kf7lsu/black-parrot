@@ -289,25 +289,39 @@ typedef enum logic [3:0] {
   ,e_opd_r7                              = 4'b0111
 } bp_cce_inst_opd_gpr_e;
 
+// TODO: update C version of inst header
+// TODO: update bp_cce and bp_cce_fsm for GAD changes
+// TODO: update microcode for GAD changes
+// TODO: update assembler for changes
+// TODO: update reg file to allow lru_coh_state as source or dest
+
 // Flag Operand Select
 // Flags can be source or destination
 typedef enum logic [3:0] {
   e_opd_rqf                              = 4'b0000
   ,e_opd_ucf                             = 4'b0001
   ,e_opd_nerf                            = 4'b0010
-  ,e_opd_ldf                             = 4'b0011
+  ,e_opd_nwbf                            = 4'b0011
   ,e_opd_pf                              = 4'b0100
-  ,e_opd_lef                             = 4'b0101
-  ,e_opd_cf                              = 4'b0110
+  ,e_opd_sf                              = 4'b0101 // also not used, when would it be?
+  // Basic flags from GAD
+  // cached dirty == cmf | cof
+  // cached maybe dirty == cmf | cof | cef
+  // cached owned == cef | cmf | cof | cff
+  // cached == csf | cef | cmf | cof | cff
+  // not cached == not(any c*f flag)
+  // invalidate = rqf & csf
+  ,e_opd_csf                             = 4'b0110
   ,e_opd_cef                             = 4'b0111
-  ,e_opd_cof                             = 4'b1000
-  ,e_opd_cdf                             = 4'b1001
-  ,e_opd_csf                             = 4'b1010
-  ,e_opd_rf                              = 4'b1011
-  ,e_opd_uf                              = 4'b1100
-  ,e_opd_if                              = 4'b1101
-  ,e_opd_nwbf                            = 4'b1110
-  ,e_opd_sf                              = 4'b1111
+  ,e_opd_cmf                             = 4'b1000
+  ,e_opd_cof                             = 4'b1001
+  ,e_opd_cff                             = 4'b1010
+  // special flags from GAD
+  ,e_opd_rf                              = 4'b1011 // requesting LCE needs replacement
+  ,e_opd_uf                              = 4'b1100 // rqf & (rsf | rof | rff)
+  // 1101 - unused
+  // 1110 - unused
+  // 1111 - unused
 } bp_cce_inst_opd_flag_e;
 
 // Control Flag one hot encoding
@@ -315,19 +329,16 @@ typedef enum logic [15:0] {
   e_flag_rqf                    = 16'b0000_0000_0000_0001 // request type flag
   ,e_flag_ucf                   = 16'b0000_0000_0000_0010 // uncached request flag
   ,e_flag_nerf                  = 16'b0000_0000_0000_0100 // non-exclusive request flag
-  ,e_flag_ldf                   = 16'b0000_0000_0000_1000 // lru dirty flag
+  ,e_flag_nwbf                  = 16'b0000_0000_0000_1000 // null writeback flag
   ,e_flag_pf                    = 16'b0000_0000_0001_0000 // pending flag
-  ,e_flag_lef                   = 16'b0000_0000_0010_0000 // lru cached exclusive flag
-  ,e_flag_cf                    = 16'b0000_0000_0100_0000 // cached by other flag
-  ,e_flag_cef                   = 16'b0000_0000_1000_0000 // cached exclusive by other flag
-  ,e_flag_cof                   = 16'b0000_0001_0000_0000 // cached owned by other flag
-  ,e_flag_cdf                   = 16'b0000_0010_0000_0000 // cached dirty by other flag
-  ,e_flag_csf                   = 16'b0000_0100_0000_0000 // cached shared by other flag
+  ,e_flag_sf                    = 16'b0000_0000_0010_0000 // speculative flag
+  ,e_flag_csf                   = 16'b0000_0000_0100_0000 // cached S by other flag
+  ,e_flag_cef                   = 16'b0000_0000_1000_0000 // cached E by other flag
+  ,e_flag_cmf                   = 16'b0000_0001_0000_0000 // cached M by other flag
+  ,e_flag_cof                   = 16'b0000_0010_0000_0000 // cached O by other flag
+  ,e_flag_cff                   = 16'b0000_0100_0000_0000 // cached F by other flag
   ,e_flag_rf                    = 16'b0000_1000_0000_0000 // replacement flag
   ,e_flag_uf                    = 16'b0001_0000_0000_0000 // upgrade flag
-  ,e_flag_if                    = 16'b0010_0000_0000_0000 // invalidate flag
-  ,e_flag_nwbf                  = 16'b0100_0000_0000_0000 // null writeback flag
-  ,e_flag_sf                    = 16'b1000_0000_0000_0000 // speculative flag
 } bp_cce_inst_flag_onehot_e;
 
 `define bp_cce_inst_num_flags $bits(bp_cce_inst_flag_onehot_e)
@@ -346,9 +357,10 @@ typedef enum logic [3:0] {
   ,e_opd_flags                           = 4'b1000 // MSHR.flags
   ,e_opd_uc_req_size                     = 4'b1001 // MSHR.uc_req_size
   ,e_opd_data_length                     = 4'b1010 // MSHR.data_length
+  ,e_opd_lru_coh_state                   = 4'b1011 // MSHR.lru_coh_state
 
   // only used as a source
-  ,e_opd_flags_and_mask                  = 4'b1011 // MSHR.flags & imm[0+:num_flags]
+  ,e_opd_flags_and_mask                  = 4'b1100 // MSHR.flags & imm[0+:num_flags]
 
   // sharers vectors require src_b to provide GPR rX containing index to use
   // These can only be used as source a, not as source b or destinations

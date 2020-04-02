@@ -1,4 +1,4 @@
-# This microcode uses MOSI protocol
+# This microcode uses MEOSI protocol
 
 #include "microcode.h"
 
@@ -44,8 +44,12 @@ pushq memCmd MEM_CMD_WB addr=lru lce=req way=lru wp=1
 complete_replacement: popq lceResp
 
 # Next Coherence State Routine
-# write request means set to M, else read means set to S
+# write request means set to M, else read means set to E or S
 next_coh_state: bf next_coh_set_m rqf
+# check non-exclusive request (read-only) or block cached anywhere, set to S
+bfnz next_coh_set_s nerf cf
+next_coh_set_e: movis COH_E nextCohSt
+bi inv_check
 next_coh_set_s: movis COH_S nextCohSt
 bi inv_check
 next_coh_set_m: movis COH_M nextCohSt
@@ -70,18 +74,16 @@ set_entry: wde addr=req lce=req way=lru state=nextCohSt
 # Transfer Check
 transfer_check: bfz read_l2 cof pt
 
-# Transfer routine - other cache has block in O/M
-# write requests invalidate owner, read requests downgrade owner to O if in M
-# owner in O remains in O on read request
+# Transfer routine - other cache has block in O, E, or M
+# write requests invalidate owner, read requests downgrade owner to O or S
 transfer: bf transfer_write rqf
-# no need to send set tag command to owner if already in O state and read request
-# cef will be 1 if owner in M, 0 if owner in O
-bfz transfer_tr cef
+# read request, M->O, E->O (could also do E->S), O->O
+# owner in O means csf will be set, no need to send Set Tag
+bf transfer_tr cef
 
-transfer_read_from_M: movis COH_O nextCohSt
+movis COH_O nextCohSt
 pushq lceCmd ST addr=req lce=owner way=owner
 wds addr=req lce=owner way=owner state=nextCohSt
-movis COH_S nextCohSt
 bi transfer_tr
 
 transfer_write: movsg nextCohSt r7
