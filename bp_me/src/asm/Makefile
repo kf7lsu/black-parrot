@@ -82,19 +82,3 @@ clean: tidy
 	rm -f $(AS)
 	rm -rf $(ROMS_DIR)
 
-
-#ei: $(AS)
-#	python2 py/roms.py -i microcode/cce/ei --bsg $(BSG_MEM_DIR) --outdir ./roms/ei
-#
-#msi: $(AS)
-#	python2 py/roms.py -i microcode/cce/msi --bsg $(BSG_MEM_DIR) --outdir ./roms/msi
-#
-#mesi: $(AS)
-#	python2 py/roms.py -i microcode/cce/mesi --bsg $(BSG_MEM_DIR) --outdir ./roms/mesi
-#
-#mesi-nonspec: $(AS)
-#	python2 py/roms.py -i microcode/cce/mesi-nonspec --bsg $(BSG_MEM_DIR) --outdir ./roms/mesi-nonspec
-#
-#as_test: $(AS)
-#	python2 py/roms.py -i microcode/cce/test --bsg $(BSG_MEM_DIR) --outdir ./roms/test
-#
