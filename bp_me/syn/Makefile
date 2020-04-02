@@ -42,8 +42,8 @@ else ifeq ($(CFG), e_bp_sexta_core_cfg)
 endif
 
 COH_PROTO   ?= mesi
-CCE_MEM_PATH = $(BP_ME_DIR)/src/asm/roms/$(COH_PROTO)
-CCE_MEM      = bp_cce_inst_rom_$(COH_PROTO).mem
+CCE_MEM_PATH = $(BP_ME_DIR)/src/asm/roms
+CCE_MEM      = $(COH_PROTO).mem
 
 NUMS = $(shell seq 0 `expr $(NUM_LCE_P) - 1`)
 BASE = bsg_trace_rom_
@@ -85,19 +85,19 @@ lint.me:
 	@echo "ME lint not supported"
 
 regress.me.sc: dirs.sc
-	$(MAKE) -j 1 build.sc sim.sc TB=bp_cce NUM_INSTR_P=$(NUM_INSTR_P)
-	$(MAKE) -j 1 build.sc sim.sc TB=bp_cce NUM_INSTR_P=$(NUM_INSTR_P) SKIP_INIT_P=1
-	$(MAKE) -j 1 build.sc sim.sc TB=bp_cce_fsm NUM_INSTR_P=$(NUM_INSTR_P)
-	$(MAKE) -j 1 build.sc sim.sc TB=bp_cce_fsm NUM_INSTR_P=$(NUM_INSTR_P) SKIP_INIT_P=1
+	$(MAKE) -j 1 build.sc sim.sc TB=bp_cce NUM_INSTR_P=$(NUM_INSTR_P) PROG=normal
+	$(MAKE) -j 1 build.sc sim.sc TB=bp_cce NUM_INSTR_P=$(NUM_INSTR_P) SKIP_INIT_P=1 PROG=uncached
+	$(MAKE) -j 1 build.sc sim.sc TB=bp_cce_fsm NUM_INSTR_P=$(NUM_INSTR_P) PROG=normal
+	$(MAKE) -j 1 build.sc sim.sc TB=bp_cce_fsm NUM_INSTR_P=$(NUM_INSTR_P) SKIP_INIT_P=1 PROG=uncached
 
 #	$(MAKE) -j 1 build.sc sim.sc TB=bp_cce_alu
 #	$(MAKE) -j 1 build.sc sim.sc TB=bp_cce_gad
 
 regress.me.v: dirs.v
-	$(MAKE) -j 1 build.v sim.v TB=bp_cce NUM_INSTR_P=$(NUM_INSTR_P)
-	$(MAKE) -j 1 build.v sim.v TB=bp_cce NUM_INSTR_P=$(NUM_INSTR_P) SKIP_INIT_P=1
-	$(MAKE) -j 1 build.v sim.v TB=bp_cce_fsm NUM_INSTR_P=$(NUM_INSTR_P)
-	$(MAKE) -j 1 build.v sim.v TB=bp_cce_fsm NUM_INSTR_P=$(NUM_INSTR_P) SKIP_INIT_P=1
+	$(MAKE) -j 1 build.v sim.v TB=bp_cce NUM_INSTR_P=$(NUM_INSTR_P) PROG=normal
+	$(MAKE) -j 1 build.v sim.v TB=bp_cce NUM_INSTR_P=$(NUM_INSTR_P) SKIP_INIT_P=1 PROG=uncached
+	$(MAKE) -j 1 build.v sim.v TB=bp_cce_fsm NUM_INSTR_P=$(NUM_INSTR_P) PROG=normal
+	$(MAKE) -j 1 build.v sim.v TB=bp_cce_fsm NUM_INSTR_P=$(NUM_INSTR_P) SKIP_INIT_P=1 PROG=uncached
 
 regress: regress.me
 regress.me: lint.me regress.me.sc regress.me.v
