@@ -101,7 +101,7 @@ package bp_common_aviary_pkg;
       ,l1_writethrough      : 0
       ,l1_coherent          : 0
       ,dcache_sets          : 64
-      ,dcache_assoc         : 8
+      ,dcache_assoc         : 2
       ,dcache_block_width   : 512
       ,icache_sets          : 64
       ,icache_assoc         : 8
