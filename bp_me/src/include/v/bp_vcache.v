@@ -88,10 +88,15 @@ module bp_vcache
     , input logic                                   mem_resp_yumi_op //passthrough
     );
 
-    assign cache_req_ip = cache_req_i;
-    assign cache_req_v_ip = cache_req_v_i;
+    logic [cache_req_width_lp-1:0] cache_req_ip_log;
+    logic cache_req_v_ip_log;
+
+    assign cache_req_ip = cache_req_ip_log;
+    assign cache_req_v_ip = cache_req_v_ip_log;
 
     always_comb begin
+      cache_req_ip_log = cache_req_i;
+      cache_req_v_ip_log = cache_req_v_i;
       cache_req_ready_o = cache_req_ready_op;
       cache_req_metadata_ip = cache_req_metadata_i;
       cache_req_metadata_v_ip = cache_req_metadata_v_i;
