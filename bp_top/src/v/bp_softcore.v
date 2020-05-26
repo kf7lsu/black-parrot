@@ -58,44 +58,44 @@ module bp_softcore
   `bp_cast_i(bp_cce_mem_msg_s, mem_resp);
   `bp_cast_i(bp_cce_mem_msg_s, io_resp);
 
-  bp_dcache_req_s dcache_req_lo;
+  bp_dcache_req_s dcache_req_lo, dcache_req_lop;
   bp_icache_req_s icache_req_lo;
-  logic dcache_req_v_lo, dcache_req_ready_li;
+  logic dcache_req_v_lo, dcache_req_v_lop, dcache_req_ready_li, dcache_req_ready_lip;
   logic icache_req_v_lo, icache_req_ready_li;
 
-  bp_dcache_req_metadata_s dcache_req_metadata_lo;
+  bp_dcache_req_metadata_s dcache_req_metadata_lo, dcache_req_metadata_lop;
   bp_icache_req_metadata_s icache_req_metadata_lo;
-  logic dcache_req_metadata_v_lo, icache_req_metadata_v_lo;
+  logic dcache_req_metadata_v_lo, dcache_req_metadata_v_lop, icache_req_metadata_v_lo;
 
-  bp_dcache_tag_mem_pkt_s dcache_tag_mem_pkt_li;
+  bp_dcache_tag_mem_pkt_s dcache_tag_mem_pkt_li, dcache_tag_mem_pkt_lip;
   bp_icache_tag_mem_pkt_s icache_tag_mem_pkt_li;
-  logic dcache_tag_mem_pkt_v_li, dcache_tag_mem_pkt_yumi_lo;
+  logic dcache_tag_mem_pkt_v_li, dcache_tag_mem_pkt_v_lip, dcache_tag_mem_pkt_yumi_lo, dcache_tag_mem_pkt_yumi_lop;
   logic icache_tag_mem_pkt_v_li, icache_tag_mem_pkt_yumi_lo;
-  logic [ptag_width_p-1:0] dcache_tag_mem_lo, icache_tag_mem_lo;
+  logic [ptag_width_p-1:0] dcache_tag_mem_lo, dcache_tag_mem_lop, icache_tag_mem_lo;
 
-  bp_dcache_data_mem_pkt_s dcache_data_mem_pkt_li;
+  bp_dcache_data_mem_pkt_s dcache_data_mem_pkt_li, dcache_data_mem_pkt_lip;
   bp_icache_data_mem_pkt_s icache_data_mem_pkt_li;
-  logic dcache_data_mem_pkt_v_li, dcache_data_mem_pkt_yumi_lo;
+  logic dcache_data_mem_pkt_v_li, dcache_data_mem_pkt_v_lip, dcache_data_mem_pkt_yumi_lo, dcache_data_mem_pkt_yumi_lop;
   logic icache_data_mem_pkt_v_li, icache_data_mem_pkt_yumi_lo;
-  logic [dcache_block_width_p-1:0] dcache_data_mem_lo;
+  logic [dcache_block_width_p-1:0] dcache_data_mem_lo, dcache_data_mem_lop;
   logic [icache_block_width_p-1:0] icache_data_mem_lo;
 
-  bp_dcache_stat_mem_pkt_s dcache_stat_mem_pkt_li;
+  bp_dcache_stat_mem_pkt_s dcache_stat_mem_pkt_li, dcache_stat_mem_pkt_lip;
   bp_icache_stat_mem_pkt_s icache_stat_mem_pkt_li;
-  logic dcache_stat_mem_pkt_v_li, dcache_stat_mem_pkt_yumi_lo;
+  logic dcache_stat_mem_pkt_v_li, dcache_stat_mem_pkt_v_lip, dcache_stat_mem_pkt_yumi_lo, dcache_stat_mem_pkt_yumi_lop;
   logic icache_stat_mem_pkt_v_li, icache_stat_mem_pkt_yumi_lo;
-  bp_dcache_stat_info_s dcache_stat_mem_lo;
+  bp_dcache_stat_info_s dcache_stat_mem_lo, dcache_stat_mem_lop;
   bp_icache_stat_info_s icache_stat_mem_lo;
 
-  logic dcache_req_complete_li, icache_req_complete_li;
+  logic dcache_req_complete_li, dcache_req_complete_lip, icache_req_complete_li;
 
-  logic [1:0] credits_full_li, credits_empty_li;
+  logic [1:0] credits_full_li, credits_empty_li, credits_empty_lip, credits_full_lip;
   logic timer_irq_li, software_irq_li, external_irq_li;
 
-  bp_cce_mem_msg_s [2:0] proc_cmd_lo;
-  logic [2:0] proc_cmd_v_lo, proc_cmd_ready_li;
-  bp_cce_mem_msg_s [2:0] proc_resp_li;
-  logic [2:0] proc_resp_v_li, proc_resp_yumi_lo;
+  bp_cce_mem_msg_s [2:0] proc_cmd_lo, proc_cmd_lop;
+  logic [2:0] proc_cmd_v_lo, proc_cmd_v_lop, proc_cmd_ready_li, proc_cmd_ready_lip;
+  bp_cce_mem_msg_s [2:0] proc_resp_li, proc_resp_lip;
+  logic [2:0] proc_resp_v_li, proc_resp_v_lip, proc_resp_yumi_lo, proc_resp_yumi_lop;
 
   bp_cce_mem_msg_s cfg_cmd_li;
   logic cfg_cmd_v_li, cfg_cmd_ready_lo;
@@ -133,10 +133,10 @@ module bp_softcore
 
      ,.dcache_req_o(dcache_req_lo)
      ,.dcache_req_v_o(dcache_req_v_lo)
-     ,.dcache_req_ready_i(dcache_req_ready_li)
+     ,.dcache_req_ready_i(dcache_req_ready_lip)
      ,.dcache_req_metadata_o(dcache_req_metadata_lo)
      ,.dcache_req_metadata_v_o(dcache_req_metadata_v_lo)
-     ,.dcache_req_complete_i(dcache_req_complete_li)
+     ,.dcache_req_complete_i(dcache_req_complete_lip)
 
      ,.icache_req_o(icache_req_lo)
      ,.icache_req_v_o(icache_req_v_lo)
@@ -145,18 +145,18 @@ module bp_softcore
      ,.icache_req_metadata_v_o(icache_req_metadata_v_lo)
      ,.icache_req_complete_i(icache_req_complete_li)
 
-     ,.dcache_tag_mem_pkt_i(dcache_tag_mem_pkt_li)
-     ,.dcache_tag_mem_pkt_v_i(dcache_tag_mem_pkt_v_li)
+     ,.dcache_tag_mem_pkt_i(dcache_tag_mem_pkt_lip)
+     ,.dcache_tag_mem_pkt_v_i(dcache_tag_mem_pkt_v_lip)
      ,.dcache_tag_mem_pkt_yumi_o(dcache_tag_mem_pkt_yumi_lo)
      ,.dcache_tag_mem_o(dcache_tag_mem_lo)
 
-     ,.dcache_data_mem_pkt_i(dcache_data_mem_pkt_li)
-     ,.dcache_data_mem_pkt_v_i(dcache_data_mem_pkt_v_li)
+     ,.dcache_data_mem_pkt_i(dcache_data_mem_pkt_lip)
+     ,.dcache_data_mem_pkt_v_i(dcache_data_mem_pkt_v_lip)
      ,.dcache_data_mem_pkt_yumi_o(dcache_data_mem_pkt_yumi_lo)
      ,.dcache_data_mem_o(dcache_data_mem_lo)
 
-     ,.dcache_stat_mem_pkt_i(dcache_stat_mem_pkt_li)
-     ,.dcache_stat_mem_pkt_v_i(dcache_stat_mem_pkt_v_li)
+     ,.dcache_stat_mem_pkt_i(dcache_stat_mem_pkt_lip)
+     ,.dcache_stat_mem_pkt_v_i(dcache_stat_mem_pkt_v_lip)
      ,.dcache_stat_mem_pkt_yumi_o(dcache_stat_mem_pkt_yumi_lo)
      ,.dcache_stat_mem_o(dcache_stat_mem_lo)
 
@@ -185,6 +185,76 @@ module bp_softcore
 
   wire [1:0][lce_id_width_p-1:0] lce_id_li = {cfg_bus_lo.dcache_id, cfg_bus_lo.icache_id};
 
+  bp_vcache
+    #(.bp_params_p(bp_params_p)
+     ,.assoc_p(dcache_assoc_p)
+     ,.sets_p(dcache_sets_p)
+     ,.block_width_p(dcache_block_width_p))
+    dcache_vcache
+    (.clk_i(clk_i)
+    ,.reset_i(reset_i)
+
+    ,.cache_req_i(dcache_req_lo)
+    ,.cache_req_ip(dcache_req_lop)
+    ,.cache_req_v_i(dcache_req_v_lo)
+    ,.cache_req_v_ip(dcache_req_v_lop)
+    ,.cache_req_ready_o(dcache_req_ready_lip)
+    ,.cache_req_ready_op(dcache_req_ready_li)
+    ,.cache_req_metadata_i(dcache_req_metadata_lo)
+    ,.cache_req_metadata_ip(dcache_req_metadata_lop)
+    ,.cache_req_metadata_v_i(dcache_req_metadata_v_lo)
+    ,.cache_req_metadata_v_ip(dcache_req_metadata_v_lop)
+
+    ,.tag_mem_pkt_o(dcache_tag_mem_pkt_lip)
+    ,.tag_mem_pkt_op(dcache_tag_mem_pkt_li)
+    ,.tag_mem_pkt_v_o(dcache_tag_mem_pkt_v_lip)
+    ,.tag_mem_pkt_v_op(dcache_tag_mem_pkt_v_li)
+    ,.tag_mem_pkt_yumi_i(dcache_tag_mem_pkt_yumi_lo)
+    ,.tag_mem_pkt_yumi_ip(dcache_tag_mem_pkt_yumi_lop)
+    ,.tag_mem_i(dcache_tag_mem_lo)
+    ,.tag_mem_ip(dcache_tag_mem_lop)
+
+    ,.data_mem_pkt_o(dcache_data_mem_pkt_lip)
+    ,.data_mem_pkt_op(dcache_data_mem_pkt_li)
+    ,.data_mem_pkt_v_o(dcache_data_mem_pkt_v_lip)
+    ,.data_mem_pkt_v_op(dcache_data_mem_pkt_v_li)
+    ,.data_mem_pkt_yumi_i(dcache_data_mem_pkt_yumi_lo)
+    ,.data_mem_pkt_yumi_ip(dcache_data_mem_pkt_yumi_lop)
+    ,.data_mem_i(dcache_data_mem_lo)
+    ,.data_mem_ip(dcache_data_mem_lop)
+
+    ,.stat_mem_pkt_o(dcache_stat_mem_pkt_lip)
+    ,.stat_mem_pkt_op(dcache_stat_mem_pkt_li)
+    ,.stat_mem_pkt_v_o(dcache_stat_mem_pkt_v_lip)
+    ,.stat_mem_pkt_v_op(dcache_stat_mem_pkt_v_li)
+    ,.stat_mem_pkt_yumi_i(dcache_stat_mem_pkt_yumi_lo)
+    ,.stat_mem_pkt_yumi_ip(dcache_stat_mem_pkt_yumi_lop)
+    ,.stat_mem_i(dcache_stat_mem_lo)
+    ,.stat_mem_ip(dcache_stat_mem_lop)
+
+    ,.cache_req_complete_o(dcache_req_complete_lip)
+    ,.cache_req_complete_op(dcache_req_complete_li)
+
+    ,.credits_full_o(credits_full_li[1])
+    ,.credits_full_op(credits_full_lip[1])
+    ,.credits_empty_o(credits_empty_li[1])
+    ,.credits_empty_op(credits_empty_lip[1])
+
+    ,.mem_cmd_o(proc_cmd_lo[1])
+    ,.mem_cmd_op(proc_cmd_lop[1])
+    ,.mem_cmd_v_o(proc_cmd_v_lo[1])
+    ,.mem_cmd_v_op(proc_cmd_v_lop[1])
+    ,.mem_cmd_ready_i(proc_cmd_ready_li[1])
+    ,.mem_cmd_ready_ip(proc_cmd_ready_lip[1])
+
+    ,.mem_resp_i(proc_resp_li[1])
+    ,.mem_resp_ip(proc_resp_lip[1])
+    ,.mem_resp_v_i(proc_resp_v_li[1])
+    ,.mem_resp_v_ip(proc_resp_v_lip[1])
+    ,.mem_resp_yumi_o(proc_resp_yumi_lo[1])
+    ,.mem_resp_yumi_op(proc_resp_yumi_lop[1])
+    );
+
   bp_uce
     #(.bp_params_p(bp_params_p)
      ,.assoc_p(dcache_assoc_p)
@@ -196,39 +266,39 @@ module bp_softcore
 
     ,.lce_id_i(lce_id_li[1])
 
-    ,.cache_req_i(dcache_req_lo)
-    ,.cache_req_v_i(dcache_req_v_lo)
+    ,.cache_req_i(dcache_req_lop)
+    ,.cache_req_v_i(dcache_req_v_lop)
     ,.cache_req_ready_o(dcache_req_ready_li)
-    ,.cache_req_metadata_i(dcache_req_metadata_lo)
-    ,.cache_req_metadata_v_i(dcache_req_metadata_v_lo)
+    ,.cache_req_metadata_i(dcache_req_metadata_lop)
+    ,.cache_req_metadata_v_i(dcache_req_metadata_v_lop)
 
     ,.tag_mem_pkt_o(dcache_tag_mem_pkt_li)
     ,.tag_mem_pkt_v_o(dcache_tag_mem_pkt_v_li)
-    ,.tag_mem_pkt_yumi_i(dcache_tag_mem_pkt_yumi_lo)
-    ,.tag_mem_i(dcache_tag_mem_lo)
+    ,.tag_mem_pkt_yumi_i(dcache_tag_mem_pkt_yumi_lop)
+    ,.tag_mem_i(dcache_tag_mem_lop)
 
     ,.data_mem_pkt_o(dcache_data_mem_pkt_li)
     ,.data_mem_pkt_v_o(dcache_data_mem_pkt_v_li)
-    ,.data_mem_pkt_yumi_i(dcache_data_mem_pkt_yumi_lo)
-    ,.data_mem_i(dcache_data_mem_lo)
+    ,.data_mem_pkt_yumi_i(dcache_data_mem_pkt_yumi_lop)
+    ,.data_mem_i(dcache_data_mem_lop)
 
     ,.stat_mem_pkt_o(dcache_stat_mem_pkt_li)
     ,.stat_mem_pkt_v_o(dcache_stat_mem_pkt_v_li)
-    ,.stat_mem_pkt_yumi_i(dcache_stat_mem_pkt_yumi_lo)
-    ,.stat_mem_i(dcache_stat_mem_lo)
+    ,.stat_mem_pkt_yumi_i(dcache_stat_mem_pkt_yumi_lop)
+    ,.stat_mem_i(dcache_stat_mem_lop)
 
     ,.cache_req_complete_o(dcache_req_complete_li)
 
-    ,.credits_full_o(credits_full_li[1])
-    ,.credits_empty_o(credits_empty_li[1])
+    ,.credits_full_o(credits_full_lip[1])
+    ,.credits_empty_o(credits_empty_lip[1])
 
-    ,.mem_cmd_o(proc_cmd_lo[1])
-    ,.mem_cmd_v_o(proc_cmd_v_lo[1])
-    ,.mem_cmd_ready_i(proc_cmd_ready_li[1])
+    ,.mem_cmd_o(proc_cmd_lop[1])
+    ,.mem_cmd_v_o(proc_cmd_v_lop[1])
+    ,.mem_cmd_ready_i(proc_cmd_ready_lip[1])
 
-    ,.mem_resp_i(proc_resp_li[1])
-    ,.mem_resp_v_i(proc_resp_v_li[1])
-    ,.mem_resp_yumi_o(proc_resp_yumi_lo[1])
+    ,.mem_resp_i(proc_resp_lip[1])
+    ,.mem_resp_v_i(proc_resp_v_lip[1])
+    ,.mem_resp_yumi_o(proc_resp_yumi_lop[1])
     );
 
   bp_uce
