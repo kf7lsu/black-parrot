@@ -715,10 +715,12 @@ module bp_be_dcache
     if(load_miss_tv) begin
       cache_req_cast_o.msg_type = e_miss_load;
       cache_req_v_o = cache_req_ready_i;
+      $display("D$ miss");
     end
     else if(store_miss_tv | lr_miss_tv) begin
       cache_req_cast_o.msg_type = e_miss_store;
       cache_req_v_o = cache_req_ready_i;
+      $display("D$ miss");
     end
     else if(wt_req) begin
       cache_req_cast_o.msg_type = e_wt_store;

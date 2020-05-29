@@ -94,38 +94,41 @@ module bp_vcache
     assign cache_req_ip = cache_req_ip_log;
     assign cache_req_v_ip = cache_req_v_ip_log;
 
+    always_comb begin
+      cache_req_ip_log = cache_req_i;
+      cache_req_v_ip_log = cache_req_v_i;
+      cache_req_metadata_ip = cache_req_metadata_i;
+      cache_req_metadata_v_ip = cache_req_metadata_v_i;
+      cache_req_ready_o = cache_req_ready_op;
+      cache_req_complete_o = cache_req_complete_op;
+
+      tag_mem_pkt_yumi_ip = tag_mem_pkt_yumi_i;
+      tag_mem_ip = tag_mem_i;
+      tag_mem_pkt_o = tag_mem_pkt_op;
+      tag_mem_pkt_v_o = tag_mem_pkt_v_op;
+
+      data_mem_pkt_yumi_ip = data_mem_pkt_yumi_i;
+      data_mem_ip = data_mem_i;
+      data_mem_pkt_o = data_mem_pkt_op;
+      data_mem_pkt_v_o = data_mem_pkt_v_op;
+
+      stat_mem_pkt_yumi_ip = stat_mem_pkt_yumi_i;
+      stat_mem_ip = stat_mem_i;
+      stat_mem_pkt_o = stat_mem_pkt_op;
+      stat_mem_pkt_v_o = stat_mem_pkt_v_op;
+
+      credits_full_o = credits_full_op;
+      credits_empty_o = credits_empty_op;
+
+      mem_cmd_ready_ip = mem_cmd_ready_i;
+      mem_cmd_o = mem_cmd_op;
+      mem_cmd_v_o = mem_cmd_v_op;
+
+      mem_resp_ip = mem_resp_i;
+      mem_resp_v_ip = mem_resp_v_i;
+      mem_resp_yumi_o = mem_resp_yumi_op;
+    end
+
     always_ff @(posedge clk_i) begin
-      cache_req_ip_log <= cache_req_i;
-      cache_req_v_ip_log <= cache_req_v_i;
-      cache_req_ready_o <= cache_req_ready_op;
-      cache_req_metadata_ip <= cache_req_metadata_i;
-      cache_req_metadata_v_ip <= cache_req_metadata_v_i;
-      cache_req_complete_o <= cache_req_complete_op;
-
-      tag_mem_pkt_o <= tag_mem_pkt_op;
-      tag_mem_pkt_v_o <= tag_mem_pkt_v_op;
-      tag_mem_pkt_yumi_ip <= tag_mem_pkt_yumi_i;
-      tag_mem_ip <= tag_mem_i;
-
-      data_mem_pkt_o <= data_mem_pkt_op;
-      data_mem_pkt_v_o <= data_mem_pkt_v_op;
-      data_mem_pkt_yumi_ip <= data_mem_pkt_yumi_i;
-      data_mem_ip <= data_mem_i;
-
-      stat_mem_pkt_o <= stat_mem_pkt_op;
-      stat_mem_pkt_v_o <= stat_mem_pkt_v_op;
-      stat_mem_pkt_yumi_ip <= stat_mem_pkt_yumi_i;
-      stat_mem_ip <= stat_mem_i;
-
-      credits_full_o <= credits_full_op;
-      credits_empty_o <= credits_empty_op;
-
-      mem_cmd_o <= mem_cmd_op;
-      mem_cmd_v_o <= mem_cmd_v_op;
-      mem_cmd_ready_ip <= mem_cmd_ready_i;
-
-      mem_resp_ip <= mem_resp_i;
-      mem_resp_v_ip <= mem_resp_v_i;
-      mem_resp_yumi_o <= mem_resp_yumi_op;
     end
 endmodule
