@@ -53,6 +53,14 @@ module bp_vc_generic
         for (i = 1; i <= num_entries; i++) begin
             always_comb begin
                 tag_match_lines[i-1] = tag_r == tag_lines[i-1]; //one of these max should be true
+		if (tag_match_lines[i-1]) begin
+		    data_o = block_lines[i];
+		    stat_o = stat_lines[i];
+		    shift_l_exts[i-1] = remove;
+		end
+		else begin
+		    shift_l_exts[i-1] = 0;
+		end
             end
             bp_vc_cell 
               #(.block_width(block_width), 
