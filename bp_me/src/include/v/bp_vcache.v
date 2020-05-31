@@ -8,6 +8,7 @@
 module bp_vcache
   import bp_common_pkg::*;
   import bp_common_aviary_pkg::*;
+  import bp_be_dcache_pkg::*;
   import bp_cce_pkg::*;
   import bp_common_cfg_link_pkg::*;
   import bp_me_pkg::*;
@@ -90,10 +91,20 @@ module bp_vcache
 
     logic [cache_req_width_lp-1:0] cache_req_ip_log;
     logic cache_req_v_ip_log;
-    logic hit;
+    logic hit, evict;
+    logic [block_width_p-1:0] vcache_data_o, vcache_data_e;
+    logic [ptag_width_p-1:0] vcache_tag_o, vcache_tag_e;
+    logic [stat_info_width_lp-1:0] vcache_stat_o, vcache_stat_e;
 
+    bp_dcache_req_s cache_req;
+    assign cache_req = cache_req_i;
+    logic cache_miss, cache_flush, cache_reset, remove;
+
+    //assign credits_full_o = requests_full;
+    assign vcache_tag_o = tag_mem_i;
     assign cache_req_ip = cache_req_ip_log;
     assign cache_req_v_ip = cache_req_v_ip_log;
+    assign cache_reset = cache_flush | reset_i;
 
     bp_vc_generic
     #(.block_width(block_width_p),
@@ -102,46 +113,96 @@ module bp_vcache
       .num_entries(64))
       vcache
       (.clk_i,
-       .reset(reset_i),
+       .reset(cache_reset),
 
-       .evict_in(0),
+       .evict_in(data_mem_pkt_yumi_i),
        .evict_data_in(data_mem_i),
        .evict_tag_in(tag_mem_i),
        .evict_stat_in(stat_mem_i),
 
-       .tag_r(tag_mem_i),
-       .remove(tag_mem_yumi_i),
+       .tag_r(cache_req.addr),
+       .remove,
        .hit,
-       .data_o(),
-       .stat_o(),
+       .data_o(vcache_data_o),
+       .stat_o(vcache_stat_e),
 
-       .evict(),
-       .data_o_evict(),
-       .tag_o_evict(),
-       .stat_o_evict());
+       .evict,
+       .data_o_evict(vcache_data_e),
+       .tag_o_evict(vcache_tag_e),
+       .stat_o_evict(vcache_stat_e));
 
     always_comb begin
-      cache_req_ip_log = cache_req_i;
-      cache_req_v_ip_log = cache_req_v_i;
-      cache_req_metadata_ip = cache_req_metadata_i;
-      cache_req_metadata_v_ip = cache_req_metadata_v_i;
-      cache_req_ready_o = cache_req_ready_op;
-      cache_req_complete_o = cache_req_complete_op;
+      cache_miss = (cache_req.msg_type == e_miss_load || cache_req.msg_type == e_miss_store) && cache_req_v_i;
+      cache_flush = cache_req.msg_type == e_cache_flush;
+      //check cache for data
+      if(cache_miss && hit) begin
+          remove = 1;
+          cache_req_ready_o = 1;
+          cache_req_complete_o = 1;
+	  cache_req_ip = 0;
+          cache_req_v_ip = 0;
+          cache_req_metadata_ip = 0;
+          cache_req_metadata_v_ip = 0;
+          stat_mem_pkt_o = vcache_stat_o;
+          stat_mem_pkt_v_o = 1;
+          data_mem_pkt_o = vcache_data_o;
+          data_mem_pkt_v_o = 1;
+          tag_mem_pkt_o = cache_req.addr;
+          tag_mem_pkt_v_o = 1;
+      end
+      else begin
+          remove = 0;
+          cache_req_ready_o = cache_req_ready_op;
+          cache_req_complete_o = cache_req_complete_op;
+          cache_req_ip = cache_req_i;
+          cache_req_v_ip = cache_req_v_i;
+          cache_req_metadata_ip = cache_req_metadata_i;
+          cache_req_metadata_v_ip = cache_req_metadata_v_i;
+          stat_mem_pkt_o = stat_mem_pkt_op;
+          stat_mem_pkt_v_o = stat_mem_pkt_v_op;
+          data_mem_pkt_o = data_mem_pkt_op;
+          data_mem_pkt_v_o = data_mem_pkt_v_op;
+          tag_mem_pkt_o = tag_mem_pkt_op;
+          tag_mem_pkt_v_o = tag_mem_pkt_v_op;
+      end
+      //handle eviction of data from v$
+      if(evict) begin
+          data_mem_pkt_yumi_ip = 1;
+          data_mem_pkt_yumi_ip = 1;
+          data_mem_pkt_yumi_ip = 1;
+          data_mem_ip = vcache_data_e;
+          tag_mem_ip = vcache_tag_e;
+          stat_mem_ip = vcache_stat_e;
+      end
+      else begin
+          data_mem_pkt_yumi_ip = 0;
+          data_mem_pkt_yumi_ip = 0;
+          data_mem_pkt_yumi_ip = 0;
+          data_mem_ip = 0;
+          tag_mem_ip = 0;
+          stat_mem_ip = 0;
+      end
+      //cache_req_ip_log = cache_req_i;
+      //cache_req_v_ip_log = cache_req_v_i;
+      //cache_req_metadata_ip = cache_req_metadata_i;
+      //cache_req_metadata_v_ip = cache_req_metadata_v_i;
+      //cache_req_ready_o = cache_req_ready_op;
+      //cache_req_complete_o = cache_req_complete_op;
 
-      tag_mem_pkt_yumi_ip = tag_mem_pkt_yumi_i;
-      tag_mem_ip = tag_mem_i;
-      tag_mem_pkt_o = tag_mem_pkt_op;
-      tag_mem_pkt_v_o = tag_mem_pkt_v_op;
+      //tag_mem_pkt_yumi_ip = tag_mem_pkt_yumi_i;
+      //tag_mem_ip = tag_mem_i;
+      //tag_mem_pkt_o = tag_mem_pkt_op;
+      //tag_mem_pkt_v_o = tag_mem_pkt_v_op;
 
-      data_mem_pkt_yumi_ip = data_mem_pkt_yumi_i;
-      data_mem_ip = data_mem_i;
-      data_mem_pkt_o = data_mem_pkt_op;
-      data_mem_pkt_v_o = data_mem_pkt_v_op;
+      //data_mem_pkt_yumi_ip = data_mem_pkt_yumi_i;
+      //data_mem_ip = data_mem_i;
+      //data_mem_pkt_o = data_mem_pkt_op;
+      //data_mem_pkt_v_o = data_mem_pkt_v_op;
 
-      stat_mem_pkt_yumi_ip = stat_mem_pkt_yumi_i;
-      stat_mem_ip = stat_mem_i;
-      stat_mem_pkt_o = stat_mem_pkt_op;
-      stat_mem_pkt_v_o = stat_mem_pkt_v_op;
+      //stat_mem_pkt_yumi_ip = stat_mem_pkt_yumi_i;
+      //stat_mem_ip = stat_mem_i;
+      //stat_mem_pkt_o = stat_mem_pkt_op;
+      //stat_mem_pkt_v_o = stat_mem_pkt_v_op;
 
       credits_full_o = credits_full_op;
       credits_empty_o = credits_empty_op;
