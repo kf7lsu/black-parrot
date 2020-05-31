@@ -90,9 +90,35 @@ module bp_vcache
 
     logic [cache_req_width_lp-1:0] cache_req_ip_log;
     logic cache_req_v_ip_log;
+    logic hit;
 
     assign cache_req_ip = cache_req_ip_log;
     assign cache_req_v_ip = cache_req_v_ip_log;
+
+    bp_vc_generic
+    #(.block_width(block_width_p),
+      .tag_width(ptag_width_p),
+      .stat_width(stat_info_width_lp),
+      .num_entries(64))
+      vcache
+      (.clk_i,
+       .reset(reset_i),
+
+       .evict_in(0),
+       .evict_data_in(data_mem_i),
+       .evict_tag_in(tag_mem_i),
+       .evict_stat_in(stat_mem_i),
+
+       .tag_r(tag_mem_i),
+       .remove(tag_mem_yumi_i),
+       .hit,
+       .data_o(),
+       .stat_o(),
+
+       .evict(),
+       .data_o_evict(),
+       .tag_o_evict(),
+       .stat_o_evict());
 
     always_comb begin
       cache_req_ip_log = cache_req_i;

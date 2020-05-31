@@ -13,18 +13,18 @@ module bp_vc_cell
   #(parameter block_width,
     parameter tag_width,
     parameter stat_width)
-   (input			clk_i
-   ,input			reset
+   (input logic				clk_i
+   ,input logic				reset
 
-   ,input [block_width-1:0]	data_l, data_r
-   ,input [tag_width-1:0]	tag_l, tag_r
-   ,input [stat_width-1:0]	stat_l, stat_r
-   ,input			shift_r, shift_l, shift_r_int, shift_l_int
+   ,input logic [block_width-1:0]	data_l, data_r
+   ,input logic [tag_width-1:0]		tag_l, tag_r
+   ,input logic [stat_width-1:0]	stat_l, stat_r
+   ,input logic				shift_r, shift_l, shift_r_int, shift_l_int
 
-   ,output			shift_r_int_o, shift_l_int_o
-   ,output [block_width-1:0]	data_o
-   ,output [tag_width-1:0]	tag_o
-   ,output [stat_width-1:0]	stat_o);
+   ,output logic			shift_r_int_o, shift_l_int_o
+   ,output logic [block_width-1:0]	data_o
+   ,output logic [tag_width-1:0]	tag_o
+   ,output logic [stat_width-1:0]	stat_o);
 
     always_comb begin
         if (shift_r || shift_r_int) begin
